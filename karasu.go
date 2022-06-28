@@ -1,8 +1,8 @@
 package karasu
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,6 +10,7 @@ import (
 )
 
 func Run() error {
+	// FIXME 設定ファイルを探す
 	cfg_file, err := os.Open("./conf/conf.toml")
 	if err != nil {
 		panic(err)
@@ -22,28 +23,29 @@ func Run() error {
 	// root待受
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		log.Printf("URI = %s\n", path)
+		log_info(fmt.Sprintf("URI = %s", path))
+		// FIXME pathのチェック処理を入れる
 		if !strings.HasPrefix(path, "/") {
 			path += "/"
 		}
-		full_path := docroot + path
-		log.Printf("FULL_PATH = %s\n", full_path)
-		f, err := os.Open(full_path)
+		file_path := docroot + path
+		log_info(fmt.Sprintf("FILE_PATH = %s", file_path))
+		f, err := os.Open(file_path)
 		if err != nil {
 			http.Error(w, "Page Not Found.", 404)
-			log.Printf("[ERROR] details = %v\n", err)
+			log_error("details", err)
 			return
 		}
 		_, err = io.Copy(w, f)
 		if err != nil {
 			http.Error(w, "Internal Server Error.", 500)
-			log.Printf("[ERROR] details = %v\n", err)
+			log_error("details", err)
 			return
 		}
 	})
 	port := strconv.Itoa(cfg.Server.Port)
+	log_info(fmt.Sprintf("Server start. Listen port:%s", port))
 	err = http.ListenAndServe(":"+port, nil)
-	log.Printf("[INFO] Server start. Listen port:%s", port)
 	if err != nil {
 		panic(err)
 	}
