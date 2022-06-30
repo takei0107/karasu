@@ -3,3 +3,11 @@ port = 8080
 
 [document]
 root = '/home/take/dev/karasu/docroot'
+
+[[document.location]]
+pattern = 'a.txt'
+path = 'b.txt'
+
+[[document.location]]
+pattern = '/foo/bar.txt'
+path = '/fuga/hoge/bar.txt'

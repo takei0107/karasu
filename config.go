@@ -6,16 +6,27 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+var (
+	port_min = 0
+	port_max = 49151
+)
+
 type config struct {
-	Document document_config
-	Server   server_config
+	Document documentConfig
+	Server   serverConfig
 }
 
-type document_config struct {
-	Root string
+type documentConfig struct {
+	Root     string
+	Location []locationConfig
 }
 
-type server_config struct {
+type locationConfig struct {
+	Pattern string
+	Path    string
+}
+
+type serverConfig struct {
 	Port int
 }
 
@@ -25,9 +36,10 @@ func load_config(cfg_file io.Reader) (*config, error) {
 		return nil, err
 	}
 	var conf config
-	perr := toml.Unmarshal(b, &conf)
-	if perr != nil {
-		return nil, perr
+	// parse toml
+	err = toml.Unmarshal(b, &conf)
+	if err != nil {
+		return nil, err
 	}
 	return &conf, nil
 }
