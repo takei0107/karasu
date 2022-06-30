@@ -26,7 +26,7 @@ func Run() error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		logger.Info.Printf("request path = %s\n", path)
-		file_path := docroot + resolveFilePath(path, cfg.Document)
+		file_path := docroot + resolveFilePath(path, cfg.Document.Location)
 		logger.Info.Printf("FILE_PATH = %s\n", file_path)
 		f, err := os.Open(file_path)
 		if err != nil {
@@ -48,21 +48,34 @@ func Run() error {
 	return nil
 }
 
-func resolveFilePath(requestPath string, documentCfg documentConfig) string {
+func resolveFilePath(requestPath string, locationCfg []locationConfig) string {
 	if !strings.HasPrefix(requestPath, "/") {
 		requestPath = "/" + requestPath
 	}
-	for _, locationCfg := range documentCfg.Location {
+	for _, locationCfg := range locationCfg {
 		locationPattern := locationCfg.Pattern
+		locationPath := locationCfg.Path
 		if !strings.HasPrefix(locationPattern, "/") {
 			locationPattern = "/" + locationPattern
 		}
+		// 完全一致
 		if requestPath == locationPattern {
-			locationPath := locationCfg.Path
 			if !strings.HasPrefix(locationPath, "/") {
 				locationPath = "/" + locationPath
 			}
 			return locationPath
+		}
+		// ディレクトリ名書き換え
+		pathElements := strings.Split(requestPath, "/")
+		var dirPath string = ""
+		// パスはスラッシュ始まりなので、strings.Splitの返り値の１つ目は空文字のためスキップ
+		for i := 1; i < len(pathElements)-1; i = i + 1 {
+			dirPath = dirPath + "/" + pathElements[i]
+		}
+		dirPath = dirPath + "/"
+		if dirPath == locationPattern {
+			fileName := pathElements[len(pathElements)-1]
+			return locationPath + fileName
 		}
 	}
 	return requestPath

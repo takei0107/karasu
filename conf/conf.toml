@@ -11,3 +11,7 @@ path = 'b.txt'
 [[document.location]]
 pattern = '/foo/bar.txt'
 path = '/fuga/hoge/bar.txt'
+
+[[document.location]]
+pattern = '/hoge/fuga/'
+path = '/fuga/hoge/'
